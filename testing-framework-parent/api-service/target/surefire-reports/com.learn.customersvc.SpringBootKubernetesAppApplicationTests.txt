@@ -1,0 +1,15 @@
+-------------------------------------------------------------------------------
+Test set: com.learn.customersvc.SpringBootKubernetesAppApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 9.73 s <<< FAILURE! - in com.learn.customersvc.SpringBootKubernetesAppApplicationTests
+shouldGetBookmarks{int, int, int, int, boolean, boolean, boolean, boolean}[1]  Time elapsed: 0.196 s  <<< FAILURE!
+java.lang.AssertionError: 
+JSON path "$.totalNumberOfElements"
+Expected: <8>
+     but: was <3>
+	at com.learn.customersvc.SpringBootKubernetesAppApplicationTests.shouldGetBookmarks(SpringBootKubernetesAppApplicationTests.java:140)
+
+shouldGetCustomerSuccessfully  Time elapsed: 0.052 s  <<< FAILURE!
+java.lang.AssertionError: Range for response status value 404 expected:<SUCCESSFUL> but was:<CLIENT_ERROR>
+	at com.learn.customersvc.SpringBootKubernetesAppApplicationTests.shouldGetCustomerSuccessfully(SpringBootKubernetesAppApplicationTests.java:119)
+

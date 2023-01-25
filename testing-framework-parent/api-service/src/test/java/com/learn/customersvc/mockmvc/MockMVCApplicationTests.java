@@ -1,0 +1,177 @@
+package com.learn.customersvc.mockmvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.learn.customersvc.dto.model.CustomerDTO;
+import com.learn.customersvc.model.Customer;
+import com.learn.customersvc.repository.CustomerRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:tc:postgresql:14-alpine:///demo"
+})
+@Disabled
+class MockMVCApplicationTests {
+
+
+    @Autowired
+    private MockMvc mvc;
+
+
+    @Autowired
+    CustomerRepository customerRepository;
+
+    private List<Customer> customers;
+
+    @BeforeEach
+    public void setUp(){
+      //customerRepository.deleteAllInBatch();
+        customers = new ArrayList<>();
+     /*   Faker faker = new Faker();
+
+        for (int i = 0; i < 10; i++) {
+
+//            CustomerDTO mockCustomer = new CustomerDTO(Long.valueOf(faker.number().randomNumber()),faker.name().lastName(),faker.name().firstName(),faker.date().birthday().toInstant()
+//                    .atZone(ZoneId.systemDefault())
+//                    .toLocalDate(), faker.dog().gender(), "SS");
+            CustomerDTO mockCustomer =  new CustomerDTO(Long.valueOf(i++),"sekar","santhosh", LocalDate.now(), "FEMALE", "RR");
+            customers.add(mockCustomer.convertDTOToEntity());
+        }
+
+        customerRepository.saveAll(customers);*/
+
+    }
+
+    /*@ParameterizedTest
+    @CsvSource({
+            "1,8,3,1,true,false,true,false",
+            "2,8,3,2,false,false,true,true",
+            "3,8,3,3,false,true,false,true"
+    })
+    void shouldGetBookmarks(int pageNo,int totalNumberOfElements, int totalPages, int currentPage, boolean isFirst,boolean isLast, boolean hasNext, boolean hasPrevious ) throws Exception {
+        mvc.perform(get("/api/bookmarks?page="+pageNo))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalNumberOfElements", equalTo(totalNumberOfElements)))
+                .andExpect(jsonPath("$.totalPages", equalTo(totalPages)))
+                .andExpect(jsonPath("$.currentPage", equalTo(currentPage)))
+                .andExpect(jsonPath("$.isFirst", equalTo(isFirst)))
+                .andExpect(jsonPath("$.isLast", equalTo(isLast)))
+                .andExpect(jsonPath("$.hasNext", equalTo(hasNext)))
+                .andExpect(jsonPath("$.hasPrevious", equalTo(hasPrevious)));
+
+    }*/
+
+    @Test
+    @Order(1)
+    void shouldCreateCustomerSuccessfully() throws Exception {
+        mvc.perform(post("/api-customer/v1/customer").contentType(MediaType.APPLICATION_JSON).content(
+                        """
+                        {
+                            "givenName": "Pooja",
+                            "surName": "Santhosh",
+                            "gender": "MALE",
+                            "dob":  "1980-12-29"  
+                        }
+                        """
+                ))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.customerId", notNullValue()))
+                .andExpect(jsonPath("$.data.givenName",is("Pooja")))
+                .andExpect(jsonPath("$.data.surName", is("Santhosh")))
+                .andExpect(jsonPath("$.data.gender", is("MALE")))
+                .andExpect(jsonPath("$.data.dob", is("1980-12-29")));
+
+    }
+    @Test
+    @Order(2)
+    void shouldGetCustomerSuccessfully() throws Exception {
+        mvc.perform(get("/api-customer/v1/customer/{id}","6"))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.data.customerId", notNullValue()))
+                .andExpect(jsonPath("$.data.givenName",is("Pooja")))
+                .andExpect(jsonPath("$.data.surName", is("Santhosh")))
+                .andExpect(jsonPath("$.data.gender", is("MALE")))
+                .andExpect(jsonPath("$.data.dob", is("1980-12-29")));
+
+    }
+
+    @Order(3)
+    @ParameterizedTest
+    @CsvSource({
+            "1,5,1,1,false,false,true,true"
+     //       "2,8,3,2,false,false,true,true",
+       //     "3,8,3,3,false,true,false,true"
+    })
+    void shouldListAllCustomers(int pageNo,int totalNumberOfElements, int totalPages, int currentPage, boolean isFirst,boolean isLast, boolean hasNext, boolean hasPrevious ) throws Exception
+    {
+        mvc.perform(get("/api-customer/v1/customer/list?page="+pageNo))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalNumberOfElements", equalTo(totalNumberOfElements)))
+                .andExpect(jsonPath("$.totalPages", equalTo(totalPages)))
+                .andExpect(jsonPath("$.currentPage", equalTo(currentPage)))
+                .andExpect(jsonPath("$.isFirst", equalTo(isFirst)))
+                .andExpect(jsonPath("$.isLast", equalTo(isLast)))
+                .andExpect(jsonPath("$.hasNext", equalTo(hasNext)))
+                .andExpect(jsonPath("$.hasPrevious", equalTo(hasPrevious)));
+
+
+    }
+
+
+    @Test
+    @Order(4)
+    public void shouldUpdateCustomerSuccessfully() throws Exception
+    {
+        mvc.perform( MockMvcRequestBuilders
+                        .put("/api-customer/v1/customer/{id}", "1")
+                        .content(asJsonString( new CustomerDTO(Long.valueOf(1),"sekar","santhosh", LocalDate.now(), "FEMALE", "RR")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.givenName",is("sekar")))
+                .andExpect(jsonPath("$.data.surName", is("santhosh")))
+                .andExpect(jsonPath("$.data.gender", is("FEMALE")));
+    }
+
+
+
+    static String asJsonString(final Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+}
